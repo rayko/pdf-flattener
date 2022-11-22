@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "Items matching \JS code:"
+grep -al '/\JS' *.png
+echo ""
+
+echo "Items matching \AA code:"
+grep -al '/\AA' *.png
+echo ""
