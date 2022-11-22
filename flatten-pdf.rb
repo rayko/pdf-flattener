@@ -12,7 +12,8 @@ def to_cairo path, target_path
   `pdftocairo #{path} -png #{target_path}/image`
 end
 
-def to_pdf path, target_path
+def to_pdf path, target_path, debug = false
+  manual_intervention(path) if debug
   puts "- Generating new PDF in #{path}"
   `img2pdf --output #{target_path} #{path}/*.png`
   Dir["#{path}/*.png"].each{ |image| File.delete(image) }
@@ -43,16 +44,26 @@ else
   files << source_path
 end
 
+def manual_intervention path
+  loop do
+    puts `./check-png-images #{path}`
+    print 'Recheck images? (y/n)'
+    answer = STDIN.gets.chomp
+    break if answer == 'n'
+    puts "\n\n"
+  end
+end
+
 puts "PDF Processor targeting:"
 files.each{ |f| puts "- #{f}" }
 puts ""
-
+debug = false
 loop do
   files.each do |pdf_file|
     workdir = File.dirname(pdf_file)
     output_file = "output/#{File.basename(pdf_file)}"
     to_cairo(pdf_file, workdir)
-    to_pdf(workdir, output_file)
+    to_pdf(workdir, output_file, debug)
     output = pdfid(output_file)
     failed_check << pdf_file unless pdfid_ok?(output)
   end
@@ -60,9 +71,10 @@ loop do
   if failed_check.any?
     puts "The following files failed validation:"
     failed_check.each{ |f| puts "- #{f}" }
-    print "Rerun failed? (y/n): "
+    print "Rerun failed with manual interventin? (y/n): "
     answer = STDIN.gets.chomp
     if answer == 'y'
+      debug = true
       puts ""
       puts "Rerunning files:"
       failed_check.each{ |f| puts "- #{f}" }
