@@ -11,7 +11,7 @@ The main script does the following actions:
 - (optional) Rerun files that still have the byte does
 
 
-=== Dependencies
+### Dependencies
 
 This tool uses `pdftocairo` to convert a PDF file into images and `img2pdf` to spawn a new PDF from the images. Ensure
 you have these tools installed on your system. Running:
@@ -28,10 +28,10 @@ The main script is done in Ruby, any version from 1.9 and above should be good. 
 should work just ok, the Ruby script is just for orchestration.
 
 
-=== Usage
+### Usage
 
 - Copy the PDF files you want to treat to the `original/` folder
-- run `ruby flatten-pdf.rb original/`
+- Run `ruby flatten-pdf.rb original/`
 - Check the output of `pdfid` as each file is checked after rebuilt
 - If at the end \AA or \JS is present, you can try reconverting with manual intervention
 
