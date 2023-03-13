@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This script just makes a binary grep for \AA and \JS on PNG files
+
+workdir=$1
+
+echo "Items matching \JS code:"
+grep -al '/\JS' $workdir/*.jpg
+echo ""
+
+echo "Items matching \AA code:"
+grep -al '/\AA' $workdir/*.jpg
+echo ""
