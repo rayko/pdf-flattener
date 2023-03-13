@@ -1,22 +1,33 @@
 source_path = ARGV[0]
+@image_format = ARGV[1] || 'png'
 
 if source_path.nil? || source_path == ''
   puts 'No file provided'
   exit 1
 end
 
+unless %[jpeg png].include?(@image_format)
+  puts "Specified image format '#{@image_format}' is not supported"
+  exist 1
+end
+
 ###
 
 def to_cairo path, target_path
   puts "- Generating images ..."
-  `pdftocairo #{path} -png #{target_path}/image`
+  `pdftocairo #{path} -#{@image_format} #{target_path}/image`
 end
 
 def to_pdf path, target_path, debug = false
   manual_intervention(path) if debug
   puts "- Generating new PDF in #{path}"
-  `img2pdf --output #{target_path} #{path}/*.png`
-  Dir["#{path}/*.png"].each{ |image| File.delete(image) }
+  if @image_format == 'png'
+    `img2pdf --output #{target_path} #{path}/*.png`
+    Dir["#{path}/*.png"].each{ |image| File.delete(image) }
+  elsif @image_format == 'jpeg'
+    `img2pdf --output #{target_path} #{path}/*.jpg`
+    Dir["#{path}/*.jpg"].each{ |image| File.delete(image) }
+  end
   puts "- Replaced original file with new PDF: #{target_path}"
 end
 
@@ -46,7 +57,15 @@ end
 
 def manual_intervention path
   loop do
-    puts `./check-png-images #{path}`
+    if @image_format == 'png'
+      puts `./check-png-images #{path}`
+    elsif @image_format == 'jpeg'
+      puts `./check-jpg-images #{path}`
+    else
+      puts "Invalid image_format"
+      exist 1
+    end
+
     print 'Recheck images? (y/n)'
     answer = STDIN.gets.chomp
     break if answer == 'n'
