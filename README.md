@@ -47,3 +47,42 @@ pass it through `pdfid`. If you don't care about \AA or \JS or any of that, just
 should be all flattened. Checking the byte codes is just a minor extra step I have to do often.
 
 The final PDF files should be on `output/` at the end of the process.
+
+### JPEG Output
+
+To change the image format used during the process an additional argument can be passed to the command:
+
+```
+ruby flatten-pdf.rb original/ jpeg
+```
+
+Instead of:
+
+```
+ruby flaten-pdf.rb original/ png
+```
+
+The default is `png`. But when using `jpeg`, the image conversion will be done using JPEG format, which
+results in smaller images. Depending on the contents of the images, this can be helpful.
+
+### JPEG vs PNG
+
+(Don't quote me on this)
+
+PNG is a great image format, and is quite suitable for high quality/lossless compressed images. However,
+the PNG format stores color and pallette information along with the data. This means that for simple designs,
+typically done in digital software or renders, PNG offers a great compression ratio, when the number of different
+colors is low. Line art, charts, logos, all are great examples for this case.
+
+PNG however will not have good compression ratio in cases where the are lots of colors involved, which is the
+typical case of actual photos from cameras. Any typical photo contains a whole lot of different colors.
+
+JPEG, does not save color information as PNG does, applying a different algorithm for compression that in fact,
+works on smaller regions of the picture to set a common pattern. These patterns represent the high-level
+details of the picture and are not necessary know completely, saving 'which detail pattern' a section of the
+picture is rather than 'saving the exact pattern'. For these reason JPEG is better suited for photos, unlike
+PNG, and in the case of actual photos, the small artifacts JPEG may produce blend better on the overall image.
+Fine details like lines or edges may outstand in a heavily compressed picture. For that reason, line art or
+high contrast images, that could be a logo or a chart, will have many artifacts shown on the compressed image.
+
+Use this information to pick one format over the other.
