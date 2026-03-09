@@ -34,7 +34,7 @@ end
 def pdfid path
   puts "- Running PDFiD ..."
   pdfid_script = 'pdfid/pdfid.py'
-  output = `python #{pdfid_script} #{path}`
+  output = `python3 #{pdfid_script} #{path}`
   puts output
   output
 end
