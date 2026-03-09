@@ -1,5 +1,6 @@
 require_relative 'lib/pdf_imager'
 require_relative 'lib/pdf_generator'
+require_relative 'lib/image_sanitizer'
 
 source_path = ARGV[0]
 @image_format = ARGV[1] || 'png'
@@ -77,6 +78,17 @@ def manual_intervention path
   end
 end
 
+def sanitize_images(source_path)
+  require 'byebug'; byebug
+  processor = ImageSanitizer.new
+  Dir["#{source_path}/*.png"].each do |png_file|
+    processor.sanitize_image! file: png_file
+  end
+  Dir["#{source_path}/*.jpg"].each do |jpg_file|
+    processor.sanitize_image! file: jpg_file
+  end
+end
+
 puts "PDF Processor targeting:"
 files.each{ |f| puts "- #{f}" }
 puts ""
@@ -86,6 +98,7 @@ loop do
     workdir = File.dirname(pdf_file)
     output_file = "output/#{File.basename(pdf_file)}"
     to_cairo(pdf_file, workdir)
+    sanitize_images(workdir)
     to_pdf(workdir, output_file, debug)
     output = pdfid(output_file)
     failed_check << pdf_file unless pdfid_ok?(output)
