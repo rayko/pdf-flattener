@@ -34,9 +34,9 @@ class ImageSanitizer
   def sanitize_png(file)
     compression = 9
     while has_offending_bytes?(file)
-      quality -= 1
-      `convert #{file} -quality #{quality} #{file}`
-      puts "Re-convert #{file} with Q #{quality}"
+      compression -= 1
+      `convert #{file} -quality #{compression} #{file}`
+      puts "Re-convert #{file} with Q #{compression}"
     end
   end
 

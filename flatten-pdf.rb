@@ -21,31 +21,24 @@ image_sanitizer = ImageSanitizer.new
 
 ###
 
-files = []
-failed_check = []
-if File.directory?(source_path)
-  source_path = source_path[0..-2] if source_path[-1] == '/'
-  Dir["#{source_path}/*.pdf"].each{ |pdf_file| files << pdf_file }
-else
-  files << source_path
-end
+files = Dir["#{source_path}*.pdf"]
 
 puts "PDF Processor targeting:"
 files.each{ |f| puts "- #{f}" }
 puts ""
 files.each do |pdf_file|
+  puts "Processing #{pdf_file} ..."
   workdir = File.dirname(pdf_file)
   output_file = "output/#{File.basename(pdf_file)}"
   image_files = pdf_imager.digest! file: pdf_file
   image_files.each { |file| image_sanitizer.sanitize_image!(file: file) }
   generator = PDFGenerator.new(source_files: image_files, delete_files: true)
   generator.generate!(target_file: output_file)
-  failed_check << pdf_file unless PDFChecker.new.pdf_ok?(output_file)
+  unless PDFChecker.new.pdf_ok?(output_file)
+    puts "File #{pdf_file} has failed PDFID checks!!"
+  end
+  puts "Processed #{pdf_file}\n"
 end
 
-if failed_check.any?
-  puts "The following files failed validation:"
-  failed_check.each{ |f| puts "- #{f}" }
-end
 
 puts 'All done!!'
