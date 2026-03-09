@@ -16,26 +16,10 @@ unless %[jpeg png].include?(@image_format)
   exist 1
 end
 
+pdf_imager = PDFImager.new(format: @image_format)
+image_sanitizer = ImageSanitizer.new
+
 ###
-
-def to_cairo pdf_file
-  puts "- Generating images ..."
-  imager = PDFImager.new format: @image_format
-  imager.digest! file: pdf_file
-end
-
-def to_pdf path, target_path, debug = false
-  manual_intervention(path) if debug
-  puts "- Generating new PDF in #{path}"
-  if @image_format == 'png'
-    files = Dir["#{path}/*.png"]
-  elsif @image_format == 'jpeg'
-    files = Dir["#{path}/*.jpg"]
-  end
-  generator = PDFGenerator.new source_files: files, delete_files: true
-  generator.generate! target_file: target_path
-  puts "- Replaced original file with new PDF: #{target_path}"
-end
 
 files = []
 failed_check = []
@@ -46,25 +30,16 @@ else
   files << source_path
 end
 
-def sanitize_images(source_path)
-  processor = ImageSanitizer.new
-  Dir["#{source_path}/*.png"].each do |png_file|
-    processor.sanitize_image! file: png_file
-  end
-  Dir["#{source_path}/*.jpg"].each do |jpg_file|
-    processor.sanitize_image! file: jpg_file
-  end
-end
-
 puts "PDF Processor targeting:"
 files.each{ |f| puts "- #{f}" }
 puts ""
 files.each do |pdf_file|
   workdir = File.dirname(pdf_file)
   output_file = "output/#{File.basename(pdf_file)}"
-  to_cairo(pdf_file)
-  sanitize_images(workdir)
-  to_pdf(workdir, output_file)
+  image_files = pdf_imager.digest! file: pdf_file
+  image_files.each { |file| image_sanitizer.sanitize_image!(file: file) }
+  generator = PDFGenerator.new(source_files: image_files, delete_files: true)
+  generator.generate!(target_file: output_file)
   failed_check << pdf_file unless PDFChecker.new.pdf_ok?(output_file)
 end
 
