@@ -90,7 +90,7 @@ loop do
   if failed_check.any?
     puts "The following files failed validation:"
     failed_check.each{ |f| puts "- #{f}" }
-    print "Rerun failed with manual interventin? (y/n): "
+    print "Rerun failed with manual intervention? (y/n): "
     answer = STDIN.gets.chomp
     if answer == 'y'
       debug = true
