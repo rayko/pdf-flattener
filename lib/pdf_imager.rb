@@ -15,6 +15,6 @@ class PDFImager
   end
 
   def digest!(file:)
-    `#{@command} #{file} -#{@format} #{file}`
+    `#{@command} #{file} -#{@format} #{@target_path}`
   end
 end

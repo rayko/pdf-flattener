@@ -1,4 +1,5 @@
 require_relative 'lib/pdf_imager'
+require_relative 'lib/pdf_generator'
 
 source_path = ARGV[0]
 @image_format = ARGV[1] || 'png'
@@ -25,12 +26,12 @@ def to_pdf path, target_path, debug = false
   manual_intervention(path) if debug
   puts "- Generating new PDF in #{path}"
   if @image_format == 'png'
-    `img2pdf --output #{target_path} #{path}/*.png`
-    Dir["#{path}/*.png"].each{ |image| File.delete(image) }
+    files = Dir["#{path}/*.png"]
   elsif @image_format == 'jpeg'
-    `img2pdf --output #{target_path} #{path}/*.jpg`
-    Dir["#{path}/*.jpg"].each{ |image| File.delete(image) }
+    files = Dir["#{path}/*.jpg"]
   end
+  generator = PDFGenerator.new source_files: files, delete_files: true
+  generator.generate! target_file: target_path
   puts "- Replaced original file with new PDF: #{target_path}"
 end
 
