@@ -60,24 +60,6 @@ else
   files << source_path
 end
 
-def manual_intervention path
-  loop do
-    if @image_format == 'png'
-      puts `./check-png-images #{path}`
-    elsif @image_format == 'jpeg'
-      puts `./check-jpg-images #{path}`
-    else
-      puts "Invalid image_format"
-      exist 1
-    end
-
-    print 'Recheck images? (y/n)'
-    answer = STDIN.gets.chomp
-    break if answer == 'n'
-    puts "\n\n"
-  end
-end
-
 def sanitize_images(source_path)
   processor = ImageSanitizer.new
   Dir["#{source_path}/*.png"].each do |png_file|
@@ -91,36 +73,19 @@ end
 puts "PDF Processor targeting:"
 files.each{ |f| puts "- #{f}" }
 puts ""
-debug = false
-loop do
-  files.each do |pdf_file|
-    workdir = File.dirname(pdf_file)
-    output_file = "output/#{File.basename(pdf_file)}"
-    to_cairo(pdf_file, workdir)
-    sanitize_images(workdir)
-    to_pdf(workdir, output_file, debug)
-    output = pdfid(output_file)
-    failed_check << pdf_file unless pdfid_ok?(output)
-  end
+files.each do |pdf_file|
+  workdir = File.dirname(pdf_file)
+  output_file = "output/#{File.basename(pdf_file)}"
+  to_cairo(pdf_file, workdir)
+  sanitize_images(workdir)
+  to_pdf(workdir, output_file)
+  output = pdfid(output_file)
+  failed_check << pdf_file unless pdfid_ok?(output)
+end
 
-  if failed_check.any?
-    puts "The following files failed validation:"
-    failed_check.each{ |f| puts "- #{f}" }
-    print "Rerun failed with manual intervention? (y/n): "
-    answer = STDIN.gets.chomp
-    if answer == 'y'
-      debug = true
-      puts ""
-      puts "Rerunning files:"
-      failed_check.each{ |f| puts "- #{f}" }
-      files = failed_check
-      failed_check = []
-    else
-      break
-    end
-  else
-    break
-  end
+if failed_check.any?
+  puts "The following files failed validation:"
+  failed_check.each{ |f| puts "- #{f}" }
 end
 
 puts 'All done!!'
