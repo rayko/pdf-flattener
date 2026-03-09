@@ -25,6 +25,10 @@
 # argument is omitted, JPEG will be used, since it results in smaller images.
 #
 # Once the process is done, all the processes PDFs will be placed at `output/` dir.
+#
+# If you want to skip the PDFId on the output PDF, simply set the envar `SKIP_PDFID`
+# to true:
+# `SKIP_PDFID=true ruby flaten-pdf.rb original/ jpeg`
 
 require_relative 'lib/pdf_imager'
 require_relative 'lib/pdf_generator'
@@ -32,7 +36,9 @@ require_relative 'lib/image_sanitizer'
 require_relative 'lib/pdf_checker'
 
 source_path = ARGV[0]
-@image_format = ARGV[1] || 'png'
+@image_format = ARGV[1] || 'jpeg'
+
+skip_pdfid = ENV['SKIP_PDFID'] == 'true'
 
 if source_path.nil? || source_path == ''
   puts 'No file provided'
@@ -59,11 +65,12 @@ files.each do |pdf_file|
   image_files.each { |file| image_sanitizer.sanitize_image!(file: file) }
   generator = PDFGenerator.new(source_files: image_files, delete_files: true)
   generator.generate!(target_file: output_file)
-  unless PDFChecker.new.pdf_ok?(output_file)
-    puts "File #{pdf_file} has failed PDFID checks!!"
+  unless skip_pdfid
+    unless PDFChecker.new.pdf_ok?(output_file)
+      puts "File #{pdf_file} has failed PDFID checks!!"
+    end
   end
-  puts "Processed #{pdf_file}\n"
+  puts "Processed #{pdf_file}\n\n"
 end
-
 
 puts 'All done!!'
