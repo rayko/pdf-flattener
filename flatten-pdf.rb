@@ -1,3 +1,31 @@
+# flatten-pdf.rb
+# Small script that automatizes a couple of system tools to 'flatten' a PDF. By
+# flattening, we mean to convert each page of the input PDF into an image file,
+# either PNG or JPEG, run some checks and re-converts if necessary on each image,
+# and pack all the iamges into a new PDF.
+#
+# This process ensures removing any code or logic coming from the original PDF
+# file that might be risky for users when opening them, like ActiveForms or
+# any JavaScript original contained.
+#
+# This is specifically tailored to pass PDFId checks on the resultant PDF file.
+#
+# To run these, the system needs to have a couple of tools available:
+# - pdftocairo > Convert PDF to images
+# - img2pdf > Pack a collection of images as a PDF file
+# - convert > ImageMagick conversion tool or similar package that bundles `convert`
+# - python3 > Required by PDFId tool bundled
+#
+# How to use?
+# The project includes an `original/` and `output/` dir. Place the PDF files to
+# process in `original/` dir, and run:
+# `ruby flatten-pdf.rb original/ jpeg`
+#
+# You can use `png` instead of `jpeg` to use PNG format instead. By default, if this
+# argument is omitted, JPEG will be used, since it results in smaller images.
+#
+# Once the process is done, all the processes PDFs will be placed at `output/` dir.
+
 require_relative 'lib/pdf_imager'
 require_relative 'lib/pdf_generator'
 require_relative 'lib/image_sanitizer'
@@ -13,14 +41,11 @@ end
 
 unless %[jpeg png].include?(@image_format)
   puts "Specified image format '#{@image_format}' is not supported"
-  exist 1
+  exit 1
 end
 
 pdf_imager = PDFImager.new(format: @image_format)
 image_sanitizer = ImageSanitizer.new
-
-###
-
 files = Dir["#{source_path}*.pdf"]
 
 puts "PDF Processor targeting:"
