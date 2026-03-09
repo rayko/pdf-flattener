@@ -1,3 +1,5 @@
+require_relative 'lib/pdf_imager'
+
 source_path = ARGV[0]
 @image_format = ARGV[1] || 'png'
 
@@ -15,7 +17,8 @@ end
 
 def to_cairo path, target_path
   puts "- Generating images ..."
-  `pdftocairo #{path} -#{@image_format} #{target_path}/image`
+  imager = PDFImager.new target_path: "#{target_path}/image", format: @image_format
+  imager.digest! file: path
 end
 
 def to_pdf path, target_path, debug = false
