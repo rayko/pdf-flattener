@@ -1,6 +1,7 @@
 require_relative 'lib/pdf_imager'
 require_relative 'lib/pdf_generator'
 require_relative 'lib/image_sanitizer'
+require_relative 'lib/pdf_checker'
 
 source_path = ARGV[0]
 @image_format = ARGV[1] || 'png'
@@ -36,21 +37,6 @@ def to_pdf path, target_path, debug = false
   puts "- Replaced original file with new PDF: #{target_path}"
 end
 
-def pdfid path
-  puts "- Running PDFiD ..."
-  pdfid_script = 'pdfid/pdfid.py'
-  output = `python3 #{pdfid_script} #{path}`
-  puts output
-  output
-end
-
-def pdfid_ok? output
-  parsed = output.split("\n").map(&:strip)
-  parsed.shift(10)
-  check = parsed.map(&:split).map(&:last).map(&:to_i).sum
-  check == 0
-end
-
 files = []
 failed_check = []
 if File.directory?(source_path)
@@ -79,8 +65,7 @@ files.each do |pdf_file|
   to_cairo(pdf_file, workdir)
   sanitize_images(workdir)
   to_pdf(workdir, output_file)
-  output = pdfid(output_file)
-  failed_check << pdf_file unless pdfid_ok?(output)
+  failed_check << pdf_file unless PDFChecker.new.pdf_ok?(output_file)
 end
 
 if failed_check.any?
