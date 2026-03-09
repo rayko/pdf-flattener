@@ -79,7 +79,6 @@ def manual_intervention path
 end
 
 def sanitize_images(source_path)
-  require 'byebug'; byebug
   processor = ImageSanitizer.new
   Dir["#{source_path}/*.png"].each do |png_file|
     processor.sanitize_image! file: png_file
