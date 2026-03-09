@@ -18,10 +18,10 @@ end
 
 ###
 
-def to_cairo path, target_path
+def to_cairo pdf_file
   puts "- Generating images ..."
-  imager = PDFImager.new target_path: "#{target_path}/image", format: @image_format
-  imager.digest! file: path
+  imager = PDFImager.new format: @image_format
+  imager.digest! file: pdf_file
 end
 
 def to_pdf path, target_path, debug = false
@@ -62,7 +62,7 @@ puts ""
 files.each do |pdf_file|
   workdir = File.dirname(pdf_file)
   output_file = "output/#{File.basename(pdf_file)}"
-  to_cairo(pdf_file, workdir)
+  to_cairo(pdf_file)
   sanitize_images(workdir)
   to_pdf(workdir, output_file)
   failed_check << pdf_file unless PDFChecker.new.pdf_ok?(output_file)
